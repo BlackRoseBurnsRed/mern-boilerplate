@@ -3,14 +3,21 @@ const MongoClient    = require('mongodb').MongoClient;
 const bodyParser     = require('body-parser');
 const app            = express();
 const path           = require('path');
+const db             = require('./../config/db');
+const mongoose       = require('mongoose').connect(db.url)
 
-require('./routes/routes.js')(app, {});
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname + '/../client', 'index.html'))
-});
+MongoClient.connect(db.url, (err, database) => {
+    if (err) return console.log(err);
 
-const port = 8000;
-app.listen(port, () => {
-    console.log('We are live on ' + port);
-});
+    require('./routes')(app, database);
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname + '/../client', 'index.html'))
+    });
+
+    app.listen(8080, () => {
+        console.log('We are live on ' + 8080);
+    });
+
+})
